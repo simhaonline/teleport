@@ -160,6 +160,7 @@ github.com/gizak/termui/widgets
 # github.com/gogo/protobuf v1.2.2-0.20190723190241-65acae22fc9d
 ## explicit
 github.com/gogo/protobuf/gogoproto
+github.com/gogo/protobuf/jsonpb
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 github.com/gogo/protobuf/sortkeys
@@ -313,6 +314,8 @@ github.com/nsf/termbox-go
 # github.com/pborman/uuid v0.0.0-20170612153648-e790cca94e6c
 ## explicit
 github.com/pborman/uuid
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
 # github.com/pquerna/otp v0.0.0-20160912161815-54653902c20e
 ## explicit
 github.com/pquerna/otp
@@ -361,6 +364,9 @@ github.com/sirupsen/logrus
 github.com/sirupsen/logrus/hooks/syslog
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
+# github.com/stretchr/testify v1.5.1
+## explicit
+github.com/stretchr/testify/assert
 # github.com/tstranex/u2f v0.0.0-20160508205855-eb799ce68da4
 ## explicit
 github.com/tstranex/u2f
@@ -527,7 +533,7 @@ google.golang.org/genproto/googleapis/rpc/status
 google.golang.org/genproto/googleapis/type/expr
 google.golang.org/genproto/googleapis/type/latlng
 google.golang.org/genproto/protobuf/field_mask
-# google.golang.org/grpc v1.23.0
+# google.golang.org/grpc v1.23.1
 ## explicit
 google.golang.org/grpc
 google.golang.org/grpc/balancer
@@ -550,6 +556,7 @@ google.golang.org/grpc/credentials/google
 google.golang.org/grpc/credentials/internal
 google.golang.org/grpc/credentials/oauth
 google.golang.org/grpc/encoding
+google.golang.org/grpc/encoding/gzip
 google.golang.org/grpc/encoding/proto
 google.golang.org/grpc/grpclog
 google.golang.org/grpc/internal

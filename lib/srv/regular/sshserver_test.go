@@ -51,6 +51,7 @@ import (
 	"github.com/gravitational/teleport/lib/utils"
 
 	"github.com/gravitational/trace"
+	"github.com/pborman/uuid"
 
 	. "gopkg.in/check.v1"
 )
@@ -69,7 +70,9 @@ type SrvSuite struct {
 	user        string
 	server      *auth.TestTLSServer
 	proxyClient *auth.Client
+	proxyID     string
 	nodeClient  *auth.Client
+	nodeID      string
 	adminClient *auth.Client
 	testServer  *auth.TestAuthServer
 }
@@ -118,7 +121,13 @@ func (s *SrvSuite) SetUpTest(c *C) {
 	s.testServer = authServer
 
 	// create proxy client used in some tests
-	s.proxyClient, err = s.server.NewClient(auth.TestBuiltin(teleport.RoleProxy))
+	s.proxyID = uuid.New()
+	s.proxyClient, err = s.server.NewClient(auth.TestIdentity{
+		I: auth.BuiltinRole{
+			Role:     teleport.RoleProxy,
+			Username: s.proxyID,
+		},
+	})
 	c.Assert(err, IsNil)
 
 	// admin client is for admin actions, e.g. creating new users
@@ -141,7 +150,13 @@ func (s *SrvSuite) SetUpTest(c *C) {
 	s.signer, err = sshutils.NewSigner(certs.Key, certs.Cert)
 	c.Assert(err, IsNil)
 
-	s.nodeClient, err = s.server.NewClient(auth.TestBuiltin(teleport.RoleNode))
+	s.nodeID = uuid.New()
+	s.nodeClient, err = s.server.NewClient(auth.TestIdentity{
+		I: auth.BuiltinRole{
+			Role:     teleport.RoleNode,
+			Username: s.nodeID,
+		},
+	})
 	c.Assert(err, IsNil)
 
 	nodeDir := c.MkDir()
@@ -153,8 +168,10 @@ func (s *SrvSuite) SetUpTest(c *C) {
 		nodeDir,
 		"",
 		utils.NetAddr{},
+		SetUUID(s.nodeID),
 		SetNamespace(defaults.Namespace),
 		SetAuditLog(s.nodeClient),
+		SetEmitter(s.nodeClient),
 		SetShell("/bin/sh"),
 		SetSessionServer(s.nodeClient),
 		SetPAMConfig(&pam.Config{Enabled: false}),
@@ -662,6 +679,7 @@ func (s *SrvSuite) TestProxyReverseTunnel(c *C) {
 		DirectClusters:        []reversetunnel.DirectCluster{{Name: s.server.ClusterName(), Client: s.proxyClient}},
 		DataDir:               c.MkDir(),
 		Component:             teleport.ComponentProxy,
+		Emitter:               s.proxyClient,
 	})
 	c.Assert(err, IsNil)
 	c.Assert(reverseTunnelServer.Start(), IsNil)
@@ -674,10 +692,11 @@ func (s *SrvSuite) TestProxyReverseTunnel(c *C) {
 		c.MkDir(),
 		"",
 		utils.NetAddr{},
-		SetUUID(hostID),
+		SetUUID(s.proxyID),
 		SetProxyMode(reverseTunnelServer),
 		SetSessionServer(s.proxyClient),
 		SetAuditLog(s.nodeClient),
+		SetEmitter(s.nodeClient),
 		SetNamespace(defaults.Namespace),
 		SetPAMConfig(&pam.Config{Enabled: false}),
 		SetBPF(&bpf.NOP{}),
@@ -756,6 +775,7 @@ func (s *SrvSuite) TestProxyReverseTunnel(c *C) {
 		SetNamespace(defaults.Namespace),
 		SetPAMConfig(&pam.Config{Enabled: false}),
 		SetBPF(&bpf.NOP{}),
+		SetEmitter(s.nodeClient),
 	)
 	c.Assert(err, IsNil)
 	c.Assert(err, IsNil)
@@ -822,6 +842,7 @@ func (s *SrvSuite) TestProxyRoundRobin(c *C) {
 		NewCachingAccessPoint: auth.NoCache,
 		DirectClusters:        []reversetunnel.DirectCluster{{Name: s.server.ClusterName(), Client: s.proxyClient}},
 		DataDir:               c.MkDir(),
+		Emitter:               s.proxyClient,
 	})
 	c.Assert(err, IsNil)
 
@@ -838,6 +859,7 @@ func (s *SrvSuite) TestProxyRoundRobin(c *C) {
 		SetProxyMode(reverseTunnelServer),
 		SetSessionServer(s.proxyClient),
 		SetAuditLog(s.nodeClient),
+		SetEmitter(s.nodeClient),
 		SetNamespace(defaults.Namespace),
 		SetPAMConfig(&pam.Config{Enabled: false}),
 		SetBPF(&bpf.NOP{}),
@@ -923,6 +945,7 @@ func (s *SrvSuite) TestProxyDirectAccess(c *C) {
 		NewCachingAccessPoint: auth.NoCache,
 		DirectClusters:        []reversetunnel.DirectCluster{{Name: s.server.ClusterName(), Client: s.proxyClient}},
 		DataDir:               c.MkDir(),
+		Emitter:               s.proxyClient,
 	})
 	c.Assert(err, IsNil)
 
@@ -937,6 +960,7 @@ func (s *SrvSuite) TestProxyDirectAccess(c *C) {
 		SetProxyMode(reverseTunnelServer),
 		SetSessionServer(s.proxyClient),
 		SetAuditLog(s.nodeClient),
+		SetEmitter(s.nodeClient),
 		SetNamespace(defaults.Namespace),
 		SetPAMConfig(&pam.Config{Enabled: false}),
 		SetBPF(&bpf.NOP{}),
@@ -1047,6 +1071,7 @@ func (s *SrvSuite) TestLimiter(c *C) {
 		SetShell("/bin/sh"),
 		SetSessionServer(s.nodeClient),
 		SetAuditLog(s.nodeClient),
+		SetEmitter(s.nodeClient),
 		SetNamespace(defaults.Namespace),
 		SetPAMConfig(&pam.Config{Enabled: false}),
 		SetBPF(&bpf.NOP{}),

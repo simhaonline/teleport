@@ -247,7 +247,6 @@ func (s *IntSuite) TestAuditOn(c *check.C) {
 		inForwardAgent   bool
 		auditSessionsURI string
 	}{
-
 		// normal teleport
 		{
 			inRecordLocation: services.RecordAtNode,
