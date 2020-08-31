@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: kubernetes
-name: test
+name: test-pr
 
 environment:
   RUNTIME: go1.14.4
@@ -9,14 +9,9 @@ environment:
   GID: 1000
 
 trigger:
-  branch:
-    - master
-    - branch/*
   event:
-    exclude:
-      - cron
-      - promote
-      - rollback
+    include:
+      - pull_request
   repo:
     include:
       - gravitational/*
@@ -130,26 +125,6 @@ steps:
       - cd /go/src/github.com/gravitational/teleport
       - make -C build.assets integration
 
-  - name: Send Slack notification for build failures
-    image: plugins/slack
-    settings:
-      webhook:
-        from_secret: SLACK_WEBHOOK
-      channel: teleport-builds
-      template: |
-        {{#if build.pull }}
-          *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}*: <https://github.com/{{ repo.owner }}/{{ repo.name }}/pull/{{ build.pull }}|Pull Request #{{ build.pull }}>
-        {{else}}
-          *{{#success build.status}}✔{{ else }}✘{{/success}} {{ uppercasefirst build.status }}: Build #{{ build.number }}* (type: `{{ build.event }}`)
-        {{/if}}
-        Commit: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commit/{{ build.commit }}|{{ truncate build.commit 8 }}>
-        Branch: <https://github.com/{{ repo.owner }}/{{ repo.name }}/commits/{{ build.branch }}|{{ build.branch }}>
-        Author: {{ build.author }}
-        <{{ build.link }}|Visit build page ↗>
-    when:
-      event: [push]
-      status: [failure]
-
 services:
   - name: Start Docker
     image: docker:dind
@@ -168,14 +143,9 @@ type: kubernetes
 name: test-docs
 
 trigger:
-  branch:
-    - master
-    - branch/*
   event:
-    exclude:
-      - cron
-      - promote
-      - rollback
+    include:
+      - pull_request
   repo:
     include:
       - gravitational/*
@@ -2660,6 +2630,6 @@ steps:
 
 ---
 kind: signature
-hmac: 382d9ed0ef2248daf1c75e74c0f1560291365c3671f441894f0ad723406a183f
+hmac: e846d9ec5b1d2a7ef1e37c5f7f3df03dcea6fb1a03cd93a75926d7ace6dd5990
 
 ...
