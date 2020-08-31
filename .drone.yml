@@ -1,7 +1,7 @@
 ---
 kind: pipeline
 type: kubernetes
-name: test-pr
+name: test
 
 environment:
   RUNTIME: go1.14.4
@@ -2630,6 +2630,6 @@ steps:
 
 ---
 kind: signature
-hmac: e846d9ec5b1d2a7ef1e37c5f7f3df03dcea6fb1a03cd93a75926d7ace6dd5990
+hmac: 0108ba988678cf444017bbc603a833da2b6b178a3613bafe3be608cccfffe4db
 
 ...
